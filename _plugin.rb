@@ -5,5 +5,5 @@ def render(path)
 end
 
 def suma(blog, a)
-  blog
+  "nothing here"
 end
