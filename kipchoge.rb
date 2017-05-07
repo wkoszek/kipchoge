@@ -8,6 +8,7 @@ require 'pp'
 require 'fileutils'
 require 'ostruct'
 require 'byebug'
+require 'kramdown'
 
 require_relative '_plugin.rb'
 
@@ -28,13 +29,19 @@ class Article
     ret = {}
     if data_raw =~ /^---/ then
       chunks_all = data_raw.split(/---\n/).select { |c| c != "" }
-      frontmatter, article_body = chunks_all[0], chunks_all[1]
+      frontmatter = chunks_all[0]
+      article_body = chunks_all[1] || ""
       ret = YAML.load(frontmatter)
-      ret['article_body'] = article_body
+      ret['article_body'] = Kramdown::Document.new(article_body).to_html
     else
       ret['article_body'] = data_raw
     end
     ret
+  end
+  def filename_output(cfg)
+    f = filename.sub(/^#{cfg.dirs.source}/, cfg.dirs.dest)
+    f.gsub!(/\.md$/, '.html')
+    f
   end
 
   def get_binding
@@ -62,6 +69,7 @@ class Blog
   end
   def add_all
     Dir["#{@cfg.dirs.source}/**/*.md"].each do |dir_entry|
+      STDERR.puts "> rendering #{dir_entry}"
       article_one = Article.new(dir_entry, self)
       add(article_one)
     end
@@ -71,8 +79,7 @@ class Blog
       layout_name = a.data._layout || "page"
       layout_file = @cfg.layout[layout_name]
       #STDERR.puts "using layout: #{layout_file}"
-      out_file = a.filename.sub(/^#{@cfg.dirs.source}/, @cfg.dirs.dest)
-      File.write(out_file, render(layout_file, a))
+      File.write(a.filename_output(@cfg), render(layout_file, a))
     end
   end
 end
