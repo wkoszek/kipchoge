@@ -68,13 +68,11 @@ class Blog
   end
   def render_all
     @articles.each do |a|
-      print a.filename
       layout_name = a.data._layout || "page"
       layout_file = @cfg.layout[layout_name]
-      STDERR.puts "using layout: #{layout_file}"
-      #layout_file = "_layout_post.erb"
-      puts render(layout_file, a)
-      #sleep 2
+      #STDERR.puts "using layout: #{layout_file}"
+      out_file = a.filename.sub(/^#{@cfg.dirs.source}/, @cfg.dirs.dest)
+      File.write(out_file, render(layout_file, a))
     end
   end
 end
