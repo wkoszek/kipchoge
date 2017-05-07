@@ -38,10 +38,18 @@ class Article
     end
     ret
   end
+
   def filename_output(cfg)
-    f = filename.sub(/^#{cfg.dirs.source}/, cfg.dirs.dest)
-    f.gsub!(/\.md$/, '.html')
-    f
+    fn_tmp = @filename.split('.')[0] + ".html"
+    fn_out = fn_tmp.sub(/^#{cfg.dirs.source}/, cfg.dirs.dest)
+    path_parts = fn_out.split('/')
+    dir_out = path_parts[0..-2].join('/')
+
+    fn_base = path_parts[-1]
+    if fn_base =~ /^\d{4}-\d{2}-\d{2}/
+      3.times { fn_base.sub!('-', '/') }
+    end
+    dir_out + '/' + fn_base
   end
 
   def get_binding
@@ -69,7 +77,7 @@ class Blog
   end
   def add_all
     Dir["#{@cfg.dirs.source}/**/*.md"].each do |dir_entry|
-      STDERR.puts "> rendering #{dir_entry}"
+      #STDERR.puts "> rendering #{dir_entry}"
       article_one = Article.new(dir_entry, self)
       add(article_one)
     end
@@ -78,8 +86,11 @@ class Blog
     @articles.each do |a|
       layout_name = a.data._layout || "page"
       layout_file = @cfg.layout[layout_name]
-      #STDERR.puts "using layout: #{layout_file}"
-      File.write(a.filename_output(@cfg), render(layout_file, a))
+      fn_out = a.filename_output(@cfg)
+      dir_out = File.dirname(fn_out)
+      STDERR.puts "using layout: #{layout_file} FOUT #{fn_out} DIROUT #{dir_out}"
+      FileUtils.mkdir_p(dir_out)
+      File.write(fn_out, render(layout_file, a))
     end
   end
 end
