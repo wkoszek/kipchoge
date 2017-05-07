@@ -1,0 +1,2 @@
+all:
+	./kipchoge.rb

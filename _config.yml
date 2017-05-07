@@ -1,0 +1,25 @@
+name: koszek.com
+url: https://www.koszek.com
+author:
+  name: "Wojciech Adam Koszek"
+  email: wojciech@koszek.com
+title: "Wojciech Adam Koszek - personal website"
+copyright: "Wojciech Adam Koszek, 2012-2017"
+encoding: utf-8
+timezone: America/San_Francisco
+
+social:
+  twitter: https://www.twitter.com/wkoszek
+  linkedin: https://www.linkedin.com/in/wkoszek
+  github: https://github.com/wkoszek
+  pinterest: dd
+  pinboard: dd
+
+layout:
+  page: _layout_page.erb
+  post: _layout_post.erb
+  book: _layout_book.erb
+
+dirs:
+  source: source
+  dest: build
