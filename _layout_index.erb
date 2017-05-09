@@ -1,0 +1,9 @@
+
+<% self.blog.articles.each do |a| %>
+  <h2><%= a.data.title %></h2>
+  <i><%= a.data.written_date %></i>
+  <p>
+    <%= a.data.description %>
+  </p>
+  
+<% end %>
