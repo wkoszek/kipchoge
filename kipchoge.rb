@@ -83,11 +83,18 @@ class Blog
   def get_binding
     binding()
   end
-  def render(path, obj = self)
-    data = File.read(path)
+
+  def render_data(data, obj = self)
     renderer = ERB.new(data)
     renderer.result(obj.get_binding)
   end
+
+  # XX remember to add File cache here
+  def render(path, obj = self)
+    data = File.read(path)
+    render_data(data, obj)
+  end
+
   def add_all
     cfg_dirs = "#{@cfg.dirs.source}/#{@cfg.dirs.pattern}"
     STDERR.puts ">>", cfg_dirs
