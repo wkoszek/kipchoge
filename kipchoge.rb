@@ -20,13 +20,14 @@ class Article
     @filename = filename
     @filename_base = File.basename(filename)
     @data_raw = File.read(@filename)
+    @blog = blog
+
     @data_tmp = parse_data(@data_raw)
     @data_tmp['filename'] = filename
     @data_tmp['filename_base'] = @filename_base
     @data_tmp['written_date'] = date_from_filename(@filename_base)
     @data_tmp['render_time'] = Time.new
     @data = OpenStruct.new(@data_tmp)
-    @blog = blog
   end
 
   def parse_data(data_raw)
@@ -36,7 +37,7 @@ class Article
       frontmatter = chunks_all[0]
       article_body = chunks_all[1] || ""
       ret = YAML.load(frontmatter)
-      ret['article_body'] = Kramdown::Document.new(article_body).to_html
+      ret['article_body'] = article_body
     else
       ret['article_body'] = data_raw
     end
@@ -112,8 +113,12 @@ class Blog
       dir_out = File.dirname(fn_out)
       STDERR.puts "using layout: #{layout_file} FOUT #{fn_out} DIROUT #{dir_out}"
 
+      rendered_body = render_data(a.data.article_body, a)
+      a.data.article_body = Kramdown::Document.new(rendered_body).to_html
+
       rendered_body = render(layout_file, a)
       body_to_write = rendered_body
+
       FileUtils.mkdir_p(dir_out)
       File.write(fn_out, body_to_write)
     end
