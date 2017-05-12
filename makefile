@@ -1,2 +1,4 @@
 all:
-	./kipchoge.rb
+	bundle exec ./kipchoge.rb
+install:
+	bundle install --path vendor/bundle
