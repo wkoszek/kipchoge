@@ -13,6 +13,13 @@ require 'kramdown'
 
 require_relative '_plugin.rb'
 
+class Debug
+  def self.dbg(*args)
+#    return
+    STDERR.puts *args
+  end
+end
+
 class Article
   attr_accessor :data, :filename, :blog
 
@@ -23,6 +30,7 @@ class Article
     @blog = blog
 
     @data_tmp = parse_data(@data_raw)
+    @data_tmp['layout_file'] = @blog.cfg.layout[@data_tmp['_layout'] || "page"]
     @data_tmp['filename'] = filename
     @data_tmp['filename_base'] = @filename_base
     @data_tmp['written_date'] = date_from_filename(@filename_base)
@@ -98,34 +106,62 @@ class Blog
 
   def add_all
     cfg_dirs = "#{@cfg.dirs.source}/#{@cfg.dirs.pattern}"
-    STDERR.puts ">>", cfg_dirs
+    Debug.dbg ">>", cfg_dirs
     Dir[cfg_dirs].each do |dir_entry|
-      STDERR.puts "> rendering #{dir_entry}"
+      Debug.dbg "> rendering #{dir_entry}"
       article_one = Article.new(dir_entry, self)
       add(article_one)
     end
   end
-  def render_all
-    @articles.each do |a|
-      layout_name = a.data._layout || "page"
-      layout_file = @cfg.layout[layout_name]
+
+  def render_one(a)
       fn_out = a.filename_output(@cfg)
       dir_out = File.dirname(fn_out)
-      STDERR.puts "using layout: #{layout_file} FOUT #{fn_out} DIROUT #{dir_out}"
+      Debug.dbg "using layout: #{a.data.layout_file} FOUT #{fn_out} DIROUT #{dir_out}"
 
+      Debug.dbg "first stage"
+      # .md >> erb >> md >> flat_md
       rendered_body = render_data(a.data.article_body, a)
       a.data.article_body = Kramdown::Document.new(rendered_body).to_html
 
-      rendered_body = render(layout_file, a)
+      Debug.dbg "second stage"
+      # flat_md >> erb_layout >> view_md
+      rendered_body = render(a.data.layout_file, a)
+      a.data.article_body = rendered_body
+   
+      Debug.dbg "third stage"
+      # view_md >> wrapping erb >> final
+      rendered_body = render('_layout_all.erb', a)
+
       body_to_write = rendered_body
 
       FileUtils.mkdir_p(dir_out)
       File.write(fn_out, body_to_write)
+  end
+
+  def render_all
+    work_q = Queue.new
+    @articles.each do |a|
+      work_q.push a
     end
+
+    workers = (0...4).map do
+      Thread.new do
+        begin
+          while x = work_q.pop(true)
+            render_one(x)
+          end
+        rescue ThreadError
+        end
+      end
+    end;
+    workers.map(&:join);
+
+    STDOUT.puts "rendered #{articles.length} files"
   end
 end
 
-class Config
+class Konfig
   attr_accessor :cfg
   def initialize(config_file = '_config.yml')
     yaml = YAML.load(File.read(config_file))
@@ -135,7 +171,7 @@ class Config
 end
 
 def main
-  cfg = Config.new().cfg
+  cfg = Konfig.new().cfg
 
   dirs_init(cfg)
 
