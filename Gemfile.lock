@@ -1,0 +1,15 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    byebug (9.0.6)
+    kramdown (1.13.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  byebug
+  kramdown
+
+BUNDLED WITH
+   1.14.6
