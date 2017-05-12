@@ -86,6 +86,7 @@ class Blog
   def initialize(cfg)
     @articles = []
     @cfg = cfg
+    @cache = {}
   end
   def add(a)
     @articles << a
@@ -93,15 +94,21 @@ class Blog
   def get_binding
     binding()
   end
+  
+  def file_cache_get(file)
+    if not @cache.keys.include? file
+      @cache[file] = File.read(file)
+    end
+    return @cache[file]
+  end
 
   def render_data(data, obj = self)
     renderer = ERB.new(data)
     renderer.result(obj.get_binding)
   end
 
-  # XX remember to add File cache here
   def render(path, obj = self)
-    data = File.read(path)
+    data = file_cache_get(path)
     render_data(data, obj)
   end
 
