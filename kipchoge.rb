@@ -10,6 +10,7 @@ require 'fileutils'
 require 'ostruct'
 require 'byebug'
 require 'kramdown'
+require 'parallel'
 
 require_relative '_plugin.rb'
 
@@ -140,23 +141,9 @@ class Blog
   end
 
   def render_all
-    work_q = Queue.new
-    @articles.each do |a|
-      work_q.push a
-    end
-
-    workers = (0...4).map do
-      Thread.new do
-        begin
-          while x = work_q.pop(true)
-            render_one(x)
-          end
-        rescue ThreadError
-        end
-      end
-    end;
-    workers.map(&:join);
-
+    results = Parallel.map(@articles, in_processes: 3) { |a|
+      render_one(a)
+    }
     STDOUT.puts "rendered #{articles.length} files"
   end
 end
