@@ -1,3 +1,23 @@
-<wrapper>
-  <%= render(a.blog.wrapper_layout_file, a.blog) %>
-</wrapper>
+<html>
+  <body>
+  
+  <%= render('_header.erb') %>
+  
+
+  <%= self.data.article_body %>
+
+  <b>tags</b>
+  <%= self.data.tags %>
+
+  <% tags = []
+     self.blog.articles.each do |a| 
+       tags += (a.data.tags || [])
+     end
+     tags = tags.uniq
+     %>
+   <% tags.each do |tag| %>
+     <a href=""><%= tag %>
+   <% end %>
+
+  </body>
+</html>
