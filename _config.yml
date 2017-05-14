@@ -21,6 +21,11 @@ layout:
   book: _layout_book.erb
   index: _layout_index.erb
 
+monitor:
+  render:
+    one: 'md$'
+    all: '(\.js$|\.css$)'
+
 dirs:
   source: source
   dest: build

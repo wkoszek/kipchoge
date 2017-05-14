@@ -11,6 +11,7 @@ require 'ostruct'
 require 'byebug'
 require 'kramdown'
 require 'parallel'
+require 'digest'
 
 require_relative '_plugin.rb'
 
@@ -65,6 +66,7 @@ class Article
     if filename =~ /^\d{4}-\d{2}-\d{2}/
       Time.parse(filename[0..'yyyy-mm-dd'.length])
     else
+      # Add file creation/modification date? See if Git preserves that.
       Time.parse('1970-01-01')
     end
   end
@@ -86,10 +88,10 @@ class Article
     binding()
   end
 end
- 
+
 class Blog
   attr_accessor :articles, :cfg
-  
+
   def initialize(cfg)
     @articles = []
     @cfg = cfg
@@ -101,7 +103,7 @@ class Blog
   def get_binding
     binding()
   end
-  
+
   def file_cache_get(file)
     if not @cache.keys.include? file
       @cache[file] = File.read(file)
@@ -123,7 +125,7 @@ class Blog
     cfg_dirs = File.join(@cfg.dirs.source, @cfg.dirs.pattern)
     Debug.dbg ">>", cfg_dirs
     Dir[cfg_dirs].each do |dir_entry|
-      Debug.dbg "> rendering #{dir_entry}"
+      Debug.dbg "> adding #{dir_entry}"
       article_one = Article.new(dir_entry, self)
       add(article_one)
     end
@@ -144,7 +146,7 @@ class Blog
       # flat_md >> erb_layout >> view_md
       rendered_body = render(a.data.layout_file, a)
       a.data.article_body = rendered_body
-   
+
       Debug.dbg "third stage"
       # view_md >> wrapping erb >> final
       rendered_body = render('_layout_all.erb', a)
@@ -155,11 +157,75 @@ class Blog
       File.write(fn_out, body_to_write)
   end
 
-  def render_all
-    results = Parallel.map(@articles, in_processes: 3) { |a|
+  def render_many(art_to_render = @articles)
+    results = Parallel.map(art_to_render, in_processes: 3) { |a|
       render_one(a)
     }
-    STDOUT.puts "rendered #{articles.length} files"
+    STDOUT.puts "rendered #{art_to_render.length} files"
+  end
+end
+
+class Server
+  def initialize(blog, port = 9123)
+    @blog = blog
+    @port = port
+  end
+
+  def monitor
+    dir_map = dir_map_make_or_load
+    do_all = false
+    fn_to_regen = []
+
+    dir_map['file_state_all'].each do |dm|
+      dm_fn, dm_mtime = dm['fn'], dm['mtime']
+      next if File.mtime(dm_fn) == dm_mtime
+
+      STDERR.puts "#{dm_fn} changed. Will renenerate everything"
+      if dm_fn =~ /#{@blog.cfg.monitor.render.all}/
+        do_all = true
+        break
+      elsif dm_fn =~ /#{@blog.cfg.monitor.render.one}/
+        fn_to_regen << dm_fn
+      end
+    end
+
+    art_to_regen = do_all ? @blog.articles : @blog.articles.select {|a|
+      fn_to_regen.include?(a.filename)
+    }
+    art_to_regen += @blog.articles.select {|a|
+      !File.exist?(a.filename_output(@blog.cfg))
+    }
+
+    @blog.render_many(art_to_regen)
+    File.write(dir_map_fn, YAML.dump(dir_map_make))
+  end
+
+  def dir_map_make_or_load
+    dir_map = nil
+    if not File.exist?(dir_map_fn)
+      Debug.dbg "Didn't find map. Renenerating #{dir_map_fn}"
+      dir_map = dir_map_make(@blog.cfg.dirs.source)
+      File.write(dir_map_fn, YAML.dump(dir_map))
+    else
+      Debug.dbg "Found map. Loading..."
+      dir_map = YAML.load(File.read(dir_map_fn))
+    end
+    dir_map
+  end
+
+  def dir_map_make(dir_name = @blog.cfg.dirs.source)
+    file_state_all = []
+    Dir[dir_name + "/**/*"].each do |file_name|
+      file_state_all << { "fn" =>  file_name, "mtime" => File.mtime(file_name) }
+    end
+    data = {}
+    data['file_state_all'] = file_state_all.sort_by{|fs| fs['fn'] }
+    Debug.dbg "# mapped #{file_state_all.length} files"
+    data
+  end
+
+  def dir_map_fn
+    File.join(@blog.cfg.dirs.dest, '.kipchoge_index.yml')
   end
 end
 
@@ -184,12 +250,14 @@ def main
 
   blog = Blog.new(cfg)
   blog.add_all
-  blog.render_all
+
+  s = Server.new(blog)
+  s.monitor()
 end
 
 def dirs_init(cfg)
-  system("rm -rf #{cfg.dirs.dest}")
-  system("cp -r #{cfg.dirs.source} #{cfg.dirs.dest}")
+  FileUtils.mkdir_p(cfg.dirs.dest)
+  system("rsync -ra #{cfg.dirs.source}/ #{cfg.dirs.dest}")
   # TODO: will have to remove unwanted files.
 end
 
