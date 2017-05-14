@@ -15,8 +15,14 @@ require 'parallel'
 require_relative '_plugin.rb'
 
 class Debug
+  @@is_enabled = 0
+  def self.enable
+    @@is_enabled = 1
+  end
   def self.dbg(*args)
-#    return
+    if @@is_enabled == 0
+      return
+    end
     STDERR.puts *args
   end
 end
@@ -165,6 +171,11 @@ class Konfig
 end
 
 def main
+  ARGV.each do |arg|
+    if arg =~ /-d/
+      Debug.enable()
+    end
+  end
   cfg = Konfig.new().cfg
 
   dirs_init(cfg)
