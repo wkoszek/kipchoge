@@ -79,7 +79,7 @@ class Article
     if fn_base =~ /^\d{4}-\d{2}-\d{2}/
       3.times { fn_base.sub!('-', '/') }
     end
-    dir_out + '/' + fn_base
+    File.join(dir_out, fn_base)
   end
 
   def get_binding
@@ -120,7 +120,7 @@ class Blog
   end
 
   def add_all
-    cfg_dirs = "#{@cfg.dirs.source}/#{@cfg.dirs.pattern}"
+    cfg_dirs = File.join(@cfg.dirs.source, @cfg.dirs.pattern)
     Debug.dbg ">>", cfg_dirs
     Dir[cfg_dirs].each do |dir_entry|
       Debug.dbg "> rendering #{dir_entry}"
