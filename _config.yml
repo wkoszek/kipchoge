@@ -17,12 +17,6 @@ social:
 
 theme_path: wojciech
 
-#layout:
-#  page: theme/_layout_page.erb
-#  post: theme/_layout_post.erb
-#  book: theme/_layout_book.erb
-#  index: theme/_layout_index.erb
-
 monitor:
   render:
     one: 'md$'
