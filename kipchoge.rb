@@ -191,7 +191,7 @@ class Server
     }
 
     STDERR.puts "Server started, PID #{serv_proc}"
-    STDERR.puts "Enter: http://#{@bind}:#{@port}/"
+    STDERR.puts "-"*80,"Enter: http://#{@bind}:#{@port}/",'-'*80
     Process.detach(serv_proc)
     ['INT', 'TERM'].each {|s| Signal.trap(s) {
       Process.kill(s, serv_proc)
@@ -199,12 +199,12 @@ class Server
     }}
 
     while true
-      scan
+      build
       sleep 0.5
     end
   end
 
-  def scan
+  def build
     dir_map = dir_map_make_or_load
     do_all = false
     fn_to_regen = []
@@ -274,9 +274,13 @@ class Konfig
 end
 
 def main
+  do_monitor = false
   ARGV.each do |arg|
     if arg =~ /-d/
       Debug.enable()
+    end
+    if arg =~ /-m/
+      do_monitor = true
     end
   end
   cfg = Konfig.new().cfg
@@ -287,7 +291,11 @@ def main
   blog.add_all
 
   s = Server.new({ :blog => blog })
-  s.monitor()
+  if do_monitor
+    s.monitor
+  else
+    s.build
+  end
 end
 
 def dirs_init(cfg)
