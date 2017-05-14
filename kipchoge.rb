@@ -127,6 +127,7 @@ class Blog
       article_one = Article.new(dir_entry, self)
       add(article_one)
     end
+    @articles.sort_by!{ |o| o.data.written_date }
   end
 
   def render_one(a)
