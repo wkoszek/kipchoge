@@ -173,7 +173,7 @@ class Server
   def initialize(args = {})
     @blog = args[:blog]
     @port = ENV['KIPCHOGE_PORT'] || args[:port] || 9123
-    @bind = ENV['KIPCHOGE_BIND'] || args[:bind]
+    @bind = ENV['KIPCHOGE_BIND'] || args[:bind] || '127.0.0.1'
   end
 
   def monitor
@@ -190,7 +190,8 @@ class Server
       server.start
     }
 
-    Debug.dbg "Server started, PID #{serv_proc}"
+    STDERR.puts "Server started, PID #{serv_proc}"
+    STDERR.puts "Enter: http://#{@bind}:#{@port}/"
     Process.detach(serv_proc)
     ['INT', 'TERM'].each {|s| Signal.trap(s) {
       Process.kill(s, serv_proc)
