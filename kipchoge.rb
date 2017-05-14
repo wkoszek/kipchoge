@@ -133,28 +133,28 @@ class Blog
   end
 
   def render_one(a)
-      fn_out = a.filename_output(@cfg)
-      dir_out = File.dirname(fn_out)
-      Debug.dbg "using layout: #{a.data.layout_file} FOUT #{fn_out} DIROUT #{dir_out}"
+    fn_out = a.filename_output(@cfg)
+    dir_out = File.dirname(fn_out)
+    Debug.dbg "using layout: #{a.data.layout_file} FOUT #{fn_out} DIROUT #{dir_out}"
 
-      Debug.dbg "first stage"
-      # .md >> erb >> md >> flat_md
-      rendered_body = render_data(a.data.article_body, a)
-      a.data.article_body = Kramdown::Document.new(rendered_body).to_html
+    Debug.dbg "first stage"
+    # .md >> erb >> md >> flat_md
+    rendered_body = render_data(a.data.article_body, a)
+    a.data.article_body = Kramdown::Document.new(rendered_body).to_html
 
-      Debug.dbg "second stage"
-      # flat_md >> erb_layout >> view_md
-      rendered_body = render(a.data.layout_file, a)
-      a.data.article_body = rendered_body
+    Debug.dbg "second stage"
+    # flat_md >> erb_layout >> view_md
+    rendered_body = render(a.data.layout_file, a)
+    a.data.article_body = rendered_body
 
-      Debug.dbg "third stage"
-      # view_md >> wrapping erb >> final
-      rendered_body = render('_layout_all.erb', a)
+    Debug.dbg "third stage"
+    # view_md >> wrapping erb >> final
+    rendered_body = render('_layout_all.erb', a)
 
-      body_to_write = rendered_body
+    body_to_write = rendered_body
 
-      FileUtils.mkdir_p(dir_out)
-      File.write(fn_out, body_to_write)
+    FileUtils.mkdir_p(dir_out)
+    File.write(fn_out, body_to_write)
   end
 
   def render_many(art_to_render = @articles)
