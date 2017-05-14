@@ -37,7 +37,8 @@ class Article
     @blog = blog
 
     @data_tmp = parse_data(@data_raw)
-    @data_tmp['layout_file'] = @blog.cfg.layout[@data_tmp['_layout'] || "page"]
+    @data_tmp['link'] = filename_output.sub(/^#{@blog.cfg.dirs.dest}\//, '')
+    @data_tmp['layout_file'] = @blog.cfg.layout[@data_tmp['klayout'] || "page"]
     @data_tmp['filename'] = filename
     @data_tmp['filename_base'] = @filename_base
     @data_tmp['written_date'] = date_from_filename(@filename_base)
@@ -68,7 +69,7 @@ class Article
     end
   end
 
-  def filename_output(cfg)
+  def filename_output(cfg = @blog.cfg)
     fn_tmp = @filename.split('.')[0] + ".html"
     fn_out = fn_tmp.sub(/^#{cfg.dirs.source}/, cfg.dirs.dest)
     path_parts = fn_out.split('/')
