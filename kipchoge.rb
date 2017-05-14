@@ -40,7 +40,7 @@ class Article
 
     @data_tmp = parse_data(@data_raw)
     @data_tmp['link'] = filename_output.sub(/^#{@blog.cfg.dirs.dest}\//, '')
-    @data_tmp['layout_file'] = @blog.cfg.layout[@data_tmp['klayout'] || "page"]
+    @data_tmp['layout_file'] = get_layout_file(@data_tmp['klayout'] || "page")
     @data_tmp['filename'] = filename
     @data_tmp['filename_base'] = @filename_base
     @data_tmp['written_date'] = date_from_filename(@filename_base)
@@ -60,6 +60,10 @@ class Article
       ret['article_body'] = data_raw
     end
     ret
+  end
+
+  def get_layout_file(layout_name)
+    File.join(@blog.cfg.theme_path, "layout_#{layout_name}.erb")
   end
 
   def date_from_filename(filename)
@@ -150,7 +154,7 @@ class Blog
 
     Debug.dbg "third stage"
     # view_md >> wrapping erb >> final
-    rendered_body = render('_layout_all.erb', a)
+    rendered_body = render(File.join(@cfg.theme_path, 'layout_all.erb'), a)
 
     body_to_write = rendered_body
 
