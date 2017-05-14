@@ -12,6 +12,7 @@ require 'byebug'
 require 'kramdown'
 require 'parallel'
 require 'digest'
+require 'webrick'
 
 require_relative '_plugin.rb'
 
@@ -158,7 +159,10 @@ class Blog
   end
 
   def render_many(art_to_render = @articles)
-    results = Parallel.map(art_to_render, in_processes: 3) { |a|
+    if art_to_render.length == 0
+      return
+    end
+    results = Parallel.map(art_to_render, in_processes: 4) { |a|
       render_one(a)
     }
     STDOUT.puts "rendered #{art_to_render.length} files"
@@ -166,15 +170,45 @@ class Blog
 end
 
 class Server
-  def initialize(blog, port = 9123)
-    @blog = blog
-    @port = port
+  def initialize(args = {})
+    @blog = args[:blog]
+    @port = ENV['KIPCHOGE_PORT'] || args[:port] || 9123
+    @bind = ENV['KIPCHOGE_BIND'] || args[:bind]
   end
 
   def monitor
+    serv_proc = fork {
+      server = WEBrick::HTTPServer.new({
+        :DocumentRoot => @blog.cfg.dirs.dest,
+        :BindAddress => @bind,
+        :Port => @port,
+      })
+      ['INT', 'TERM'].each {|s| Signal.trap(s) {
+          STDERR.puts "Shutting down server..."
+          server.shutdown
+      }}
+      server.start
+    }
+
+    Debug.dbg "Server started, PID #{serv_proc}"
+    Process.detach(serv_proc)
+    ['INT', 'TERM'].each {|s| Signal.trap(s) {
+      Process.kill(s, serv_proc)
+      exit
+    }}
+
+    while true
+      scan
+      sleep 0.5
+    end
+  end
+
+  def scan
     dir_map = dir_map_make_or_load
     do_all = false
     fn_to_regen = []
+
+    Debug.dbg ">> scanning"
 
     dir_map['file_state_all'].each do |dm|
       dm_fn, dm_mtime = dm['fn'], dm['mtime']
@@ -251,7 +285,7 @@ def main
   blog = Blog.new(cfg)
   blog.add_all
 
-  s = Server.new(blog)
+  s = Server.new({ :blog => blog })
   s.monitor()
 end
 
