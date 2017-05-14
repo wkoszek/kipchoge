@@ -175,8 +175,9 @@ def main
 end
 
 def dirs_init(cfg)
-  system("mkdir -p #{cfg.dirs.dest} 2>/dev/null")
-  system("cd #{cfg.dirs.source} && find . -type d -print0 | (cd ../#{cfg.dirs.dest} && xargs -0 mkdir) 2>/dev/null")
+  system("rm -rf #{cfg.dirs.dest}")
+  system("cp -r #{cfg.dirs.source} #{cfg.dirs.dest}")
+  # TODO: will have to remove unwanted files.
 end
 
 main
