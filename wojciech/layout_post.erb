@@ -1,5 +1,62 @@
-<h2><%= self.data.title %></h2>
-<a href="">Twitter</a>
-<p>
-  <%= self.data.article_body %>
-</p>
+<article>
+    <h1 class="title"><%= self.data.title %></h1>
+    <i>by <%= self.data.author %></i>
+    &nbsp;&nbsp;&sdot;&nbsp;&nbsp;
+    <i><%= self.data.written_date.strftime('%b %e, %Y') %></i>
+    &nbsp;&nbsp;&sdot;&nbsp;&nbsp;
+    <i><%= self.data.address %></i>
+    <br />
+    <br />
+    <b><%= self.data.description %></b>
+    <br />
+    <hr class="noprint" />
+      <%= partial "_share" %>
+    <hr class="noprint" />
+    <div class="article_body">
+        BODYYYYY
+    </div>
+</article>
+
+<%
+  prev_page = self.blog.articles[self.data.index - 1] || nil
+  next_page = self.blog.articles[self.data.index + 1] || nil
+%>
+
+<div class="row noprint">
+    <br>
+    <div class="col-md-6 text-left">
+        <% if prev_page %>
+            <i class="fa fa-arrow-left"></i>
+            <a href="<%= prev_page.data.link %>"><span>Previous</span></a>
+            <br>
+            &ldquo;<%= prev_page.data.title %>&rdquo;
+        <% end %>
+    </div>
+    <div class="col-md-6 text-right">
+        <% if next_page %>
+            <a href="<%= next_page.data.link %>"><span>Next</span></a>
+            <i class="fa fa-arrow-right"></i>
+            <br>
+            &ldquo;<%= next_page.data.title %>&rdquo;
+        <% end %>
+    </div>
+</div>
+
+<div class="noprint">
+    <hr>
+    <h3 id="mailing-list">Subscribe for updates</h3>
+    <p>
+        Once a month I send updates on the
+        new content and hints for software
+        engineers.
+        <%= partial "mailchimp" %>
+    </p>
+
+    <hr>
+    <b>Liked it? Share it!</b>
+    <%= partial "_share" %>
+
+    <hr>
+    <%= partial "_article_footer" %>
+    <%= partial "_disqus" %>
+</div>

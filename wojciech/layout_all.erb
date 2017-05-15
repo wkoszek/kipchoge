@@ -6,9 +6,9 @@
     <head>
         <meta charset="utf-8" />
         <meta http-equiv='X-UA-Compatible' content='IE=edge;chrome=1' />
-        <meta name="author" content="Wojciech Adam Koszek">
+        <meta name="author" content="<%= self.blog.cfg.author.name %>">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="p:domain_verify" content="35dedfd4f697e6e974b0ae6631ca7351"/>
+        <meta name="p:domain_verify" content="<%= self.blog.cfg.verify.pinterest %>"/>
 
         <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
@@ -23,7 +23,7 @@
 
         <link rel="icon" type="image/png" href="/img/favicon.ico">
 
-        <title><%= self.data.title  %> - Wojciech Adam Koszek</title>
+        <title><%= self.data.title  %> - <%= self.blog.cfg.author.name %></title>
         <meta name="description" content="<%= self.data.description %>" />
 
         <meta property="og:title" content="<%= self.data.title %>" />
@@ -33,11 +33,9 @@
 		<meta property="og:image" content="<%= self.data.image %>" />
 	<% end %>
 
-
         <meta property="og:type" content="article" />
-        <meta property="article:author" content="https://www.koszek.com/about" />
-        <meta property="article:publisher" content="https://www.koszek.com/" />
-
+        <meta property="article:author" content="<%= self.blog.cfg.url %>/about" />
+        <meta property="article:publisher" content="<%= self.blog.cfg.url %>" />
 
     </head>
     <style type="text/css">
@@ -49,26 +47,95 @@
       }
       h1,h2,h3 { 
         font-family: "equity-text-b";
-      font-weight: bold; }
+        font-weight: bold;
+      }
     </style>
-    <body>
 
-  <%= render(File.join(self.blog.cfg.theme_path, 'header.erb')) %>
 
-  <%= self.data.article_body %>
+    <div class="container">
+        <div class="row noprint"><!-- Header -->
+            <div class="col-md-3 logo">
+                <a href="/"><%= self.blog.cfg.author.name %></a>
+            </div>
+            <div class="col-md-9 links hidden-sm hidden-xs"><!-- Desktop menu -->
+                <a class="in" id="blog" href="/">Blog</a>
+                <a class="in" id="reading" href="/reading/">Reading</a>
+                <a class="in" id="papers" href="/papers/">Papers</a>
+                <a class="in" id="about" href="/about/">About me</a>
+                <input type="text" class="st-default-search-input">
+            </div>
+        </div>
+        <div class="row noprint"><!-- Header -->
+            <hr/>
+        </div>
+        <div class="row hidden-md hidden-lg links noprint"><!-- Mobile menu, 1st row -->
+            <div class="col-xs-4">
+                <br>
+                <a class="in" href="/">Blog</a>
+            </div>
+            <div class="col-xs-4">
+                <br>
+                <a class="in" href="/reading/">Reading</a>
+            </div>
+            <div class="col-xs-4">
+                <br>
+                <a class="in subscribe" href="/subscribe/">Subscribe</a>
+            </div>
+        </div>
+        <div class="row hidden-md hidden-lg links noprint"><!-- Mobile menu, 2nd row -->
+            <div class="col-xs-4">
+                <br>
+                <a class="in" href="/papers/">Papers</a>
+            </div>
+            <div class="col-xs-4">
+                <br>
+                <a class="in" href="/about/">About</a>
+            </div>
+            <div class="col-xs-4">
+                <br>
+		<!--
+                <a class="hidden-lg hidden-md" href="#notes">Notes</a>
+		-->
+            </div>
+        </div>
+        <div class="row hidden-md hidden-lg links text-center noprint"><!-- Search -->
+            <br>
+            <input type="text" class="st-default-search-input">
+        </div>
 
-  <b>tags</b>
-  <%= self.data.tags %>
+        <div class="row">
+            <div class="col-md-2 leftpanel hidden-xs hidden-sm">
+            </div>
+    
+            <div class="col-md-7 content">
+	      content
+            </div>
 
-  <% tags = []
-     self.blog.articles.each do |a| 
-       tags += (a.data.tags || [])
-     end
-     tags = tags.uniq
-     %>
-   <% tags.each do |tag| %>
-     <a href=""><%= tag %>
-   <% end %>
+            <div class="col-md-1">
+            </div>
 
-  </body>
+            <div class="col-md-2 rightpanel noprint">
+	      <%= render(File.include(self.blog.cfg.theme_path, "layout_right.html")) %>
+	    </div>
+        </div>
+
+        <div class="row noprint">
+            <div class="col-md-12 footer">
+                <i>&copy;&nbsp;2012&dash;2017 <%= self.blog.cfg.author.name %> (<a href="https://www.twitter.com/wkoszek/">@wkoszek</a>)</i>
+                <br>
+                Visits so far: <%= partial "stats" %>
+            </div>
+        </div>
+    </div><!--container-->
+    <script type="text/javascript">
+        var active_page_elem = document.getElementById('active_page_name')
+        var active_page_name = (active_page_elem != null ? active_page_elem.textContent : "blog");
+        var active_page_link = document.getElementById(active_page_name);
+        active_page_link.className = "ac";
+    </script>
+    <%= partial "_inspectlet" %>
+
+
 </html>
+   
+
