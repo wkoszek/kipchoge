@@ -8,6 +8,8 @@ copyright: "Wojciech Adam Koszek, 2012-2017"
 encoding: utf-8
 timezone: America/San_Francisco
 
+theme_path: wojciech
+
 social:
   twitter: https://www.twitter.com/wkoszek
   linkedin: https://www.linkedin.com/in/wkoszek
@@ -15,7 +17,8 @@ social:
   pinterest: dd
   pinboard: dd
 
-theme_path: wojciech
+verify:
+  pinterest: 35dedfd4f697e6e974b0ae6631ca7351
 
 monitor:
   render:
