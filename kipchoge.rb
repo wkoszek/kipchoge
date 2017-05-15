@@ -32,13 +32,14 @@ end
 class Article
   attr_accessor :data, :filename, :blog
 
-  def initialize(filename, blog)
+  def initialize(filename, index, blog)
     @filename = filename
     @filename_base = File.basename(filename)
     @data_raw = File.read(@filename)
     @blog = blog
 
     @data_tmp = parse_data(@data_raw)
+    @data_tmp['index'] = index
     @data_tmp['link'] = filename_output.sub(/^#{@blog.cfg.dirs.dest}\//, '')
     @data_tmp['layout_file'] = get_layout_file(@data_tmp['klayout'] || "page")
     @data_tmp['filename'] = filename
@@ -129,9 +130,9 @@ class Blog
   def add_all
     cfg_dirs = File.join(@cfg.dirs.source, @cfg.dirs.pattern)
     Debug.dbg ">>", cfg_dirs
-    Dir[cfg_dirs].each do |dir_entry|
+    Dir[cfg_dirs].each_with_index do |dir_entry, dir_entry_idx|
       Debug.dbg "> adding #{dir_entry}"
-      article_one = Article.new(dir_entry, self)
+      article_one = Article.new(dir_entry, dir_entry_idx, self)
       add(article_one)
     end
     @articles.sort_by!{ |o| o.data.written_date }
@@ -147,7 +148,7 @@ class Blog
     rendered_body = render_data(a.data.article_body, a)
     a.data.article_body = Kramdown::Document.new(rendered_body).to_html
 
-    Debug.dbg "second stage"
+    Debug.dbg "second stage: #{a.data.layout_file}"
     # flat_md >> erb_layout >> view_md
     rendered_body = render(a.data.layout_file, a)
     a.data.article_body = rendered_body
@@ -166,9 +167,11 @@ class Blog
     if art_to_render.length == 0
       return
     end
-    results = Parallel.map(art_to_render, in_processes: 4) { |a|
+#    results = Parallel.map(art_to_render, in_processes: 1) { |a|
+    art_to_render.each do |a|
       render_one(a)
-    }
+    end
+#    }
     STDOUT.puts "rendered #{art_to_render.length} files"
   end
 end
@@ -217,13 +220,14 @@ class Server
 
     dir_map['file_state_all'].each do |dm|
       dm_fn, dm_mtime = dm['fn'], dm['mtime']
-      next if File.mtime(dm_fn) == dm_mtime
+      next if File.exist?(dm_fn) && File.mtime(dm_fn) == dm_mtime
 
-      STDERR.puts "#{dm_fn} changed. Will renenerate everything"
       if dm_fn =~ /#{@blog.cfg.monitor.render.all}/
+        STDERR.puts "#{dm_fn} changed. Will render everything"
         do_all = true
         break
       elsif dm_fn =~ /#{@blog.cfg.monitor.render.one}/
+        STDERR.puts "#{dm_fn} changed. Will add to resources to be rendered"
         fn_to_regen << dm_fn
       end
     end
