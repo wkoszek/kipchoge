@@ -108,14 +108,14 @@
             </div>
     
             <div class="col-md-7 content">
-	      content
+	      <%= self.data.article_body %>
             </div>
 
             <div class="col-md-1">
             </div>
 
             <div class="col-md-2 rightpanel noprint">
-	      <%= render(File.include(self.blog.cfg.theme_path, "layout_right.html")) %>
+	      <%= render File.join(self.blog.cfg.theme_path, 'layout_right.erb') %>
 	    </div>
         </div>
 
@@ -134,8 +134,4 @@
         active_page_link.className = "ac";
     </script>
     <%= partial "_inspectlet" %>
-
-
 </html>
-   
-

@@ -123,6 +123,7 @@ class Blog
   end
 
   def render(path, obj = self)
+    Debug.dbg ">> rendering the path #{path}"
     data = file_cache_get(path)
     render_data(data, obj)
   end
