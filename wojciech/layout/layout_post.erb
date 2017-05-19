@@ -13,7 +13,7 @@
       <%= partial "_share" %>
     <hr class="noprint" />
     <div class="article_body">
-        BODYYYYY
+        <%= self.data.body_article %>
     </div>
 </article>
 
@@ -22,9 +22,9 @@
   next_page = self.blog.articles[self.data.index + 1] || nil
 %>
 
-<div class="row noprint">
+<div class="col-1-1 noprint">
     <br>
-    <div class="col-md-6 text-left">
+    <div class="col-6-12 text-left">
         <% if prev_page %>
             <i class="fa fa-arrow-left"></i>
             <a href="<%= prev_page.data.link %>"><span>Previous</span></a>
@@ -32,7 +32,7 @@
             &ldquo;<%= prev_page.data.title %>&rdquo;
         <% end %>
     </div>
-    <div class="col-md-6 text-right">
+    <div class="col-6-12 text-right">
         <% if next_page %>
             <a href="<%= next_page.data.link %>"><span>Next</span></a>
             <i class="fa fa-arrow-right"></i>
