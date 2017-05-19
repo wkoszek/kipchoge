@@ -168,11 +168,9 @@ class Blog
     if art_to_render.length == 0
       return
     end
-#    results = Parallel.map(art_to_render, in_processes: 1) { |a|
-    art_to_render.each do |a|
+    results = Parallel.map(art_to_render, in_processes: 4) { |a|
       render_one(a)
-    end
-#    }
+    }
     STDOUT.puts "rendered #{art_to_render.length} files"
   end
 end
