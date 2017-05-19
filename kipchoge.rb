@@ -64,7 +64,7 @@ class Article
   end
 
   def get_layout_file(layout_name)
-    File.join(@blog.cfg.theme_path, "layout_#{layout_name}.erb")
+    File.join(@blog.cfg.theme, 'layout', "layout_#{layout_name}.erb")
   end
 
   def date_from_filename(filename)
@@ -156,7 +156,7 @@ class Blog
 
     Debug.dbg "third stage"
     # view_md >> wrapping erb >> final
-    rendered_body = render(File.join(@cfg.theme_path, 'layout_all.erb'), a)
+    rendered_body = render(File.join(@cfg.theme, layout, 'layout_all.erb'), a)
 
     body_to_write = rendered_body
 
@@ -255,10 +255,13 @@ class Server
     dir_map
   end
 
-  def dir_map_make(dir_name = @blog.cfg.dirs.source)
+  def dir_map_make(dir_src = @blog.cfg.dirs.source)
     file_state_all = []
-    Dir[dir_name + "/**/*"].each do |file_name|
-      file_state_all << { "fn" =>  file_name, "mtime" => File.mtime(file_name) }
+    dir_theme = File.join(@blog.cfg.theme, 'layout')
+    [ Dir[dir_src + "/**/*"], Dir[dir_theme + "/**/*"] ].each do |dir|
+      dir.each do |file_name|
+        file_state_all << { "fn" =>  file_name, "mtime" => File.mtime(file_name) }
+      end
     end
     data = {}
     data['file_state_all'] = file_state_all.sort_by{|fs| fs['fn'] }
@@ -308,6 +311,10 @@ end
 def dirs_init(cfg)
   FileUtils.mkdir_p(cfg.dirs.dest)
   system("rsync -ra #{cfg.dirs.source}/ #{cfg.dirs.dest}")
+
+  asset_from = File.join(cfg.theme, 'assets')
+  asset_to = File.join(cfg.dirs.dest, 'assets')
+  system("rsync -ra #{asset_from}/ #{asset_to}/")
   # TODO: will have to remove unwanted files.
 end
 

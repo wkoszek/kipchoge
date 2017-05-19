@@ -8,7 +8,7 @@ copyright: "Wojciech Adam Koszek, 2012-2017"
 encoding: utf-8
 timezone: America/San_Francisco
 
-theme_path: wojciech
+theme: wojciech
 
 social:
   twitter: https://www.twitter.com/wkoszek
@@ -23,7 +23,7 @@ verify:
 monitor:
   render:
     one: 'md$'
-    all: '(\.js$|\.css$)'
+    all: '(\.js$|\.css$|\.erb$)'
 
 dirs:
   source: source
