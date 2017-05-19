@@ -156,7 +156,7 @@ class Blog
 
     Debug.dbg "third stage"
     # view_md >> wrapping erb >> final
-    rendered_body = render(File.join(@cfg.theme, layout, 'layout_all.erb'), a)
+    rendered_body = render(File.join(@cfg.theme, 'layout', 'layout_all.erb'), a)
 
     body_to_write = rendered_body
 
