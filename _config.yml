@@ -10,6 +10,13 @@ timezone: America/San_Francisco
 
 theme: wojciech
 
+plugin:
+  google_analytics:
+    id: UA-8027537-3
+  statcounter:
+    sc_security: "b542d462"
+    sc_project: "10468040"
+
 social:
   twitter: https://www.twitter.com/wkoszek
   linkedin: https://www.linkedin.com/in/wkoszek
@@ -28,5 +35,6 @@ monitor:
 dirs:
   source: source
   dest: build
-  pattern: '**/*.md'
+  #pattern: '**/*.md'
+  pattern: '**/2012-05-13-unfriendly_it.html.md'
   #pattern: 'index.md'
